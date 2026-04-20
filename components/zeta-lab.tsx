@@ -277,12 +277,12 @@ export function ZetaLab() {
               <ControlBlock
                 label="Simulation Speed"
                 value={`${controls.timeScale.toFixed(2)}x`}
-                helper="Slows the solver down for a calmer orbital read or speeds it up for turbulence."
+                helper="Push this way down for slow-motion inspection or much higher for aggressive, turbulent motion."
               >
                 <Slider
-                  min={0.1}
-                  max={1.25}
-                  step={0.05}
+                  min={0.02}
+                  max={3}
+                  step={0.02}
                   value={[controls.timeScale]}
                   onValueChange={([value]) => setNumericControl("timeScale", value)}
                 />
@@ -319,11 +319,11 @@ export function ZetaLab() {
               <ControlBlock
                 label="Viewport Zoom"
                 value={`${controls.zoom.toFixed(2)}x`}
-                helper="Pull back for the universe-scale field or zoom inward to inspect local bonds."
+                helper="Zoom much farther out for the full field or much farther in to inspect local structure."
               >
                 <Slider
-                  min={0.6}
-                  max={1.8}
+                  min={0.2}
+                  max={3}
                   step={0.05}
                   value={[controls.zoom]}
                   onValueChange={([value]) => setNumericControl("zoom", value)}
@@ -440,13 +440,15 @@ function MetricCard({
 }) {
   return (
     <Card className="overflow-hidden">
-      <CardContent className="flex items-center justify-between gap-3 p-4">
+      <CardContent className="p-4">
+        <div className="mb-3 flex justify-start">
+          <div className="rounded-full border border-white/10 bg-white/5 p-2.5 text-cyan-200">
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
         <div>
           <div className="text-[11px] uppercase tracking-[0.2em] text-white/45">{label}</div>
           <div className="mt-2 text-xl font-semibold text-white">{value}</div>
-        </div>
-        <div className="rounded-full border border-white/10 bg-white/5 p-3 text-cyan-200">
-          <Icon className="h-4 w-4" />
         </div>
       </CardContent>
     </Card>

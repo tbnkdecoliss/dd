@@ -148,15 +148,15 @@ export function ZetaViewport({ controls, preset, runId, onMetrics, onBackendChan
 
         for (let index = 0; index < sprites.length; index += 1) {
           const sprite = sprites[index];
-          const intensity = Math.min(1, 0.32 + engine.energy[index] * 1.1);
-          const depthFactor = 0.6 + ((engine.depth[index] + 280) / 560) * 0.7;
-          const projectedScale = Math.max(0.08, (engine.size[index] + engine.energy[index] * 0.12) * depthFactor);
+          const intensity = Math.min(1.2, 0.42 + engine.energy[index] * 1.45);
+          const depthFactor = 0.72 + ((engine.depth[index] + 280) / 560) * 0.78;
+          const projectedScale = Math.max(0.11, (engine.size[index] + engine.energy[index] * 0.18) * depthFactor);
 
           sprite.x = engine.x[index] + engine.depth[index] * 0.06;
           sprite.y = engine.y[index] + engine.depth[index] * 0.12;
           sprite.tint = engine.getTint(index);
           sprite.scale.set(projectedScale);
-          sprite.alpha = Math.min(0.82, 0.18 + intensity * 0.34 + depthFactor * 0.1);
+          sprite.alpha = Math.min(0.96, 0.34 + intensity * 0.4 + depthFactor * 0.12);
         }
 
         for (let index = 0; index < moteSprites.length; index += 1) {
@@ -185,7 +185,7 @@ export function ZetaViewport({ controls, preset, runId, onMetrics, onBackendChan
             Math.sin(angle) * orbitRadius * seed.lift +
             engine.vy[host] * seed.drag;
           sprite.scale.set(seed.scale * depthFactor);
-          sprite.alpha = Math.min(0.48, seed.alpha + depthFactor * 0.08 + engine.energy[host] * 0.12);
+          sprite.alpha = Math.min(0.72, seed.alpha + depthFactor * 0.16 + engine.energy[host] * 0.18);
         }
 
         metricFrame += 1;
@@ -222,10 +222,13 @@ function createNodeTexture(
 ) {
   const circle = new PIXI.Graphics();
   circle.beginFill(0xffffff, 1);
-  circle.drawCircle(6, 6, 3);
+  circle.drawCircle(8, 8, 3.4);
   circle.endFill();
-  circle.beginFill(0xffffff, 0.12);
-  circle.drawCircle(6, 6, 8);
+  circle.beginFill(0xffffff, 0.28);
+  circle.drawCircle(8, 8, 6.4);
+  circle.endFill();
+  circle.beginFill(0xffffff, 0.1);
+  circle.drawCircle(8, 8, 11.5);
   circle.endFill();
 
   return app.renderer.generateTexture(circle);
@@ -237,10 +240,13 @@ function createMoteTexture(
 ) {
   const circle = new PIXI.Graphics();
   circle.beginFill(0xffffff, 1);
-  circle.drawCircle(4, 4, 1.3);
+  circle.drawCircle(5, 5, 1.5);
   circle.endFill();
-  circle.beginFill(0xffffff, 0.16);
-  circle.drawCircle(4, 4, 3.5);
+  circle.beginFill(0xffffff, 0.24);
+  circle.drawCircle(5, 5, 3.9);
+  circle.endFill();
+  circle.beginFill(0xffffff, 0.08);
+  circle.drawCircle(5, 5, 6);
   circle.endFill();
 
   return app.renderer.generateTexture(circle);
@@ -252,10 +258,13 @@ function createStarTexture(
 ) {
   const circle = new PIXI.Graphics();
   circle.beginFill(0xffffff, 1);
-  circle.drawCircle(3, 3, 1.1);
+  circle.drawCircle(4, 4, 1.25);
   circle.endFill();
-  circle.beginFill(0xffffff, 0.08);
-  circle.drawCircle(3, 3, 3);
+  circle.beginFill(0xffffff, 0.18);
+  circle.drawCircle(4, 4, 2.8);
+  circle.endFill();
+  circle.beginFill(0xffffff, 0.05);
+  circle.drawCircle(4, 4, 5);
   circle.endFill();
 
   return app.renderer.generateTexture(circle);
@@ -272,18 +281,18 @@ function drawField(
     return;
   }
 
-  graphics.lineStyle(1, 0xff8a3d, 0.18);
+  graphics.lineStyle(1.2, 0xffb067, 0.3);
   graphics.moveTo(engine.poleX, 0);
   graphics.lineTo(engine.poleX, engine.height);
 
-  graphics.lineStyle(1, 0x2ce4ff, 0.06);
+  graphics.lineStyle(1, 0x67eeff, 0.12);
   graphics.drawCircle(engine.centerX, engine.centerY, Math.min(engine.width, engine.height) * 0.16);
   graphics.drawCircle(engine.centerX, engine.centerY, Math.min(engine.width, engine.height) * 0.26);
   graphics.drawCircle(engine.centerX, engine.centerY, Math.min(engine.width, engine.height) * 0.36);
   graphics.drawCircle(engine.centerX, engine.centerY, Math.min(engine.width, engine.height) * 0.47);
 
   for (let order = 1; order <= engine.config.zetaDepth; order += 3) {
-    graphics.lineStyle(1, order === 1 ? 0xff8a3d : 0x6fe6ff, order === 1 ? 0.08 : 0.035);
+    graphics.lineStyle(1, order === 1 ? 0xffa24d : 0x83eeff, order === 1 ? 0.16 : 0.07);
     graphics.drawCircle(engine.poleX, engine.centerY, order * 18);
   }
 }
@@ -301,7 +310,7 @@ function drawLinks(
 
   for (let index = 0; index < engine.linkCount; index += 1) {
     const offset = index * 4;
-    graphics.lineStyle(1, 0xaaf7ff, 0.08 + engine.linkStrengths[index] * 0.3);
+    graphics.lineStyle(1.2, 0xc7fbff, 0.18 + engine.linkStrengths[index] * 0.42);
     graphics.moveTo(engine.linkPositions[offset], engine.linkPositions[offset + 1]);
     graphics.lineTo(engine.linkPositions[offset + 2], engine.linkPositions[offset + 3]);
   }
@@ -319,7 +328,7 @@ function createMoteSeeds(hostCount: number) {
       speed: 1.1 + orbit * 0.18 + seeded(index * 3.2) * 0.25,
       baseRadius: 8 + orbit * 4 + seeded(index * 7.4) * 12,
       scale: 0.12 + orbit * 0.015 + seeded(index * 6.8) * 0.04,
-      alpha: 0.05 + seeded(index * 2.4) * 0.08,
+      alpha: 0.12 + seeded(index * 2.4) * 0.12,
       lift: 0.55 + seeded(index * 4.3) * 0.65,
       drag: 0.2 + seeded(index * 8.7) * 0.7,
       tint: orbit % 2 === 0 ? 0xffd788 : 0x7de9ff
@@ -331,8 +340,8 @@ function createStarSeeds() {
   return Array.from({ length: AMBIENT_ATOM_COUNT }, (_, index) => ({
     x: seeded(index * 9.17) * 1.2,
     y: seeded(index * 4.73 + 1.9) * 1.2,
-    scale: 0.08 + seeded(index * 5.81) * 0.26,
-    alpha: 0.03 + seeded(index * 7.39) * 0.12,
+    scale: 0.1 + seeded(index * 5.81) * 0.34,
+    alpha: 0.08 + seeded(index * 7.39) * 0.18,
     driftX: (seeded(index * 11.11) - 0.5) * 5,
     driftY: (seeded(index * 6.23) - 0.5) * 4,
     twinkle: 0.5 + seeded(index * 3.17) * 2.1,
@@ -359,7 +368,7 @@ function drawStarfield(
     sprite.x = wrap(seed.x * width + elapsed * seed.driftX * 3, wrappedWidth) - 24;
     sprite.y = wrap(seed.y * height + elapsed * seed.driftY * 3, wrappedHeight) - 24;
     sprite.scale.set(seed.scale * (1.15 - (zoom - 1) * 0.08) * twinkle);
-    sprite.alpha = seed.alpha * (0.8 + twinkle * 0.7);
+    sprite.alpha = seed.alpha * (1 + twinkle * 0.9);
   }
 }
 
