@@ -9,10 +9,18 @@ export type PresetId =
 export type SimulationControls = {
   force: number;
   radius: number;
+  bandCount: number;
   syncVelocity: number;
   mutationThreshold: number;
   polePressure: number;
   turbulence: number;
+  timeScale: number;
+  zoom: number;
+  zetaDepth: number;
+  enableMutation: boolean;
+  enableBonds: boolean;
+  enableForces: boolean;
+  enableSync: boolean;
   showLinks: boolean;
   showField: boolean;
 };
@@ -33,24 +41,21 @@ export type SimulationPreset = {
   description: string;
   narrative: string;
   accent: string;
-  config: Omit<SimulationControls, "showLinks" | "showField">;
+  config: Omit<
+    SimulationControls,
+    "showLinks" | "showField" | "enableMutation" | "enableBonds" | "enableForces" | "enableSync"
+  >;
   biases: PresetBiases;
 };
 
 export type SimulationMetrics = {
   totalCount: number;
+  visibleAtoms: number;
   activeBands: number;
   bondCount: number;
   mutationEvents: number;
   meanEnergy: number;
   frameTime: number;
   presetLabel: string;
-};
-
-export type LinkSegment = {
-  fromX: number;
-  fromY: number;
-  toX: number;
-  toY: number;
-  strength: number;
+  zetaDepth: number;
 };

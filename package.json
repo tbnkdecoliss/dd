@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:wasm": "wasm-pack build wasm/zeta-solver --target web --out-dir ../../lib/wasm/zeta-solver --release",
     "build": "next build",
+    "build:all": "npm run build:wasm && npm run build",
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "lint": "next lint"

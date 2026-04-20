@@ -1,0 +1,15 @@
+{
+  "name": "zeta_solver",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "zeta_solver_bg.wasm",
+    "zeta_solver.js",
+    "zeta_solver.d.ts"
+  ],
+  "main": "zeta_solver.js",
+  "types": "zeta_solver.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

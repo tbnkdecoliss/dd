@@ -3,6 +3,9 @@ import type { PresetId, SimulationMetrics, SimulationPreset } from "@/lib/zeta-s
 export const PARTICLE_COUNT = 130;
 export const BAND_COUNT = 7;
 export const PELLETIER_FACTOR = Math.PI ** 2 / 6 - 1 / 12;
+export const ORBITAL_MOTE_COUNT = PARTICLE_COUNT * 6;
+export const AMBIENT_ATOM_COUNT = 2600;
+export const VISIBLE_ATOM_COUNT = PARTICLE_COUNT + ORBITAL_MOTE_COUNT + AMBIENT_ATOM_COUNT;
 
 export const PRESETS: SimulationPreset[] = [
   {
@@ -14,10 +17,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 1,
       radius: 340,
+      bandCount: 7,
       syncVelocity: 0.03,
       mutationThreshold: 1,
       polePressure: 0.7,
-      turbulence: 0.35
+      turbulence: 0.35,
+      timeScale: 0.72,
+      zoom: 1,
+      zetaDepth: 16
     },
     biases: {
       attraction: 0.85,
@@ -38,10 +45,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 1.15,
       radius: 300,
+      bandCount: 8,
       syncVelocity: 0.05,
       mutationThreshold: 1.15,
       polePressure: 0.95,
-      turbulence: 0.55
+      turbulence: 0.55,
+      timeScale: 0.82,
+      zoom: 1.08,
+      zetaDepth: 16
     },
     biases: {
       attraction: 0.82,
@@ -62,10 +73,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 1.25,
       radius: 280,
+      bandCount: 6,
       syncVelocity: 0.035,
       mutationThreshold: 0.8,
       polePressure: 1.4,
-      turbulence: 0.65
+      turbulence: 0.65,
+      timeScale: 0.68,
+      zoom: 1.18,
+      zetaDepth: 16
     },
     biases: {
       attraction: 0.88,
@@ -86,10 +101,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 0.9,
       radius: 460,
+      bandCount: 10,
       syncVelocity: 0.025,
       mutationThreshold: 1.45,
       polePressure: 0.6,
-      turbulence: 0.25
+      turbulence: 0.25,
+      timeScale: 0.58,
+      zoom: 0.9,
+      zetaDepth: 16
     },
     biases: {
       attraction: 0.9,
@@ -110,10 +129,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 1.05,
       radius: 320,
+      bandCount: 9,
       syncVelocity: 0.065,
       mutationThreshold: 0.95,
       polePressure: 0.75,
-      turbulence: 0.4
+      turbulence: 0.4,
+      timeScale: 0.85,
+      zoom: 1.05,
+      zetaDepth: 16
     },
     biases: {
       attraction: 0.92,
@@ -134,10 +157,14 @@ export const PRESETS: SimulationPreset[] = [
     config: {
       force: 1.45,
       radius: 380,
+      bandCount: 12,
       syncVelocity: 0.055,
       mutationThreshold: 0.7,
       polePressure: 1.1,
-      turbulence: 0.95
+      turbulence: 0.95,
+      timeScale: 0.92,
+      zoom: 1.12,
+      zetaDepth: 16
     },
     biases: {
       attraction: 1.05,
@@ -161,10 +188,12 @@ export const PRESET_MAP: Record<PresetId, SimulationPreset> = PRESETS.reduce(
 
 export const DEFAULT_METRICS = (presetLabel: string): SimulationMetrics => ({
   totalCount: PARTICLE_COUNT,
+  visibleAtoms: VISIBLE_ATOM_COUNT,
   activeBands: BAND_COUNT,
   bondCount: 0,
   mutationEvents: 0,
   meanEnergy: 0,
   frameTime: 0,
-  presetLabel
+  presetLabel,
+  zetaDepth: 16
 });

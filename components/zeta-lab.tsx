@@ -2,11 +2,14 @@
 
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import {
+  Atom,
   Eye,
   EyeOff,
   Orbit,
   RotateCcw,
   Sparkles,
+  Telescope,
+  TimerReset,
   Waves
 } from "lucide-react";
 
@@ -23,6 +26,10 @@ import { cn } from "@/lib/utils";
 const INITIAL_PRESET = PRESET_MAP.baseline;
 const INITIAL_CONTROLS: SimulationControls = {
   ...INITIAL_PRESET.config,
+  enableMutation: true,
+  enableBonds: true,
+  enableForces: true,
+  enableSync: true,
   showLinks: true,
   showField: true
 };
@@ -31,12 +38,13 @@ export function ZetaLab() {
   const [presetId, setPresetId] = useState<PresetId>(INITIAL_PRESET.id);
   const [controls, setControls] = useState<SimulationControls>(INITIAL_CONTROLS);
   const [metrics, setMetrics] = useState<SimulationMetrics>(DEFAULT_METRICS(INITIAL_PRESET.label));
+  const [solverBackend, setSolverBackend] = useState<"wasm" | "js">("js");
   const [runId, setRunId] = useState(0);
   const [controlsHidden, setControlsHidden] = useState(false);
   const [log, setLog] = useState<string[]>([
-    "Initialized 130 zeta centers across 7 active bands.",
-    "Rendering strategy: PixiJS viewport + typed-array solver.",
-    "zeta(1) is modeled as a clamped pole lens, not a finite constant."
+    "Initialized 130 active zeta centers with a dense orbital atom cloud.",
+    "Visible field now includes thousands of micro-atoms for depth.",
+    "zeta(1) is the pole lens, but the harmonic stack can extend through zeta(16)."
   ]);
   const previousMutationCount = useRef(0);
   const [isPending, startTransition] = useTransition();
@@ -72,10 +80,23 @@ export function ZetaLab() {
     }));
   };
 
+  const setToggleControl = (key: keyof Pick<SimulationControls, "enableMutation" | "enableBonds" | "enableForces" | "enableSync">) => {
+    setControls((current) => ({
+      ...current,
+      [key]: !current[key]
+    }));
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,140,66,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(0,224,255,0.12),transparent_30%)]" />
-      <ZetaViewport controls={controls} preset={preset} runId={runId} onMetrics={setMetrics} />
+      <ZetaViewport
+        controls={controls}
+        preset={preset}
+        runId={runId}
+        onMetrics={setMetrics}
+        onBackendChange={setSolverBackend}
+      />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="pointer-events-auto absolute right-4 top-4 z-30 flex gap-3 md:right-6 md:top-6">
@@ -104,24 +125,28 @@ export function ZetaLab() {
               <div className="flex flex-wrap items-center gap-3">
                 <Badge variant="accent">Zeta Manifold Lab</Badge>
                 <Badge variant="cyan">{deferredMetrics.presetLabel}</Badge>
+                <Badge>{solverBackend === "wasm" ? "Solver: WASM" : "Solver: JS Fallback"}</Badge>
                 {isPending ? <Badge>Updating</Badge> : null}
               </div>
               <div className="space-y-3">
                 <CardTitle className="max-w-xl text-3xl leading-tight text-white md:text-4xl">
-                  A cinematic sandbox for a pole-at-1 zeta interpretation.
+                  A denser multi-zeta orbital field with zoom and cinematic slowdown.
                 </CardTitle>
                 <CardDescription className="max-w-2xl text-[15px] text-white/72">
-                  The scene treats <span className="font-mono text-white">zeta(1)</span> as a singular
-                  field lens and uses <span className="font-mono text-white">zeta(2) + zeta(-1)</span> as a
-                  stable normalization factor for the force system.
+                  The scene treats <span className="font-mono text-white">zeta(1)</span> as the singular
+                  lens, then layers harmonic contributions up to{" "}
+                  <span className="font-mono text-white">{`zeta(${deferredMetrics.zetaDepth})`}</span> to
+                  create a richer orbital manifold across {deferredMetrics.activeBands} live bands.
                 </CardDescription>
               </div>
             </CardHeader>
           </Card>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <MetricCard label="Active Centers" value={String(deferredMetrics.totalCount)} icon={Orbit} />
+            <MetricCard label="Visible Atoms" value={String(deferredMetrics.visibleAtoms)} icon={Atom} />
             <MetricCard label="Active Bands" value={String(deferredMetrics.activeBands)} icon={Waves} />
+            <MetricCard label="Zeta Depth" value={`1-${deferredMetrics.zetaDepth}`} icon={Telescope} />
             <MetricCard
               label="Bonded Pairs"
               value={String(deferredMetrics.bondCount)}
@@ -129,7 +154,7 @@ export function ZetaLab() {
             />
             <MetricCard label="Mutation Events" value={String(deferredMetrics.mutationEvents)} icon={Sparkles} />
             <MetricCard label="Mean Energy" value={deferredMetrics.meanEnergy.toFixed(3)} icon={Orbit} />
-            <MetricCard label="Frame Time" value={`${deferredMetrics.frameTime.toFixed(2)} ms`} icon={Waves} />
+            <MetricCard label="Frame Time" value={`${deferredMetrics.frameTime.toFixed(2)} ms`} icon={TimerReset} />
           </div>
 
           <Card className="max-w-full">
@@ -236,6 +261,34 @@ export function ZetaLab() {
               </ControlBlock>
 
               <ControlBlock
+                label="Active Bands"
+                value={String(controls.bandCount)}
+                helper="Reseeds the manifold across more or fewer orbital bands, from dense lanes to broad spectra."
+              >
+                <Slider
+                  min={4}
+                  max={18}
+                  step={1}
+                  value={[controls.bandCount]}
+                  onValueChange={([value]) => setNumericControl("bandCount", value)}
+                />
+              </ControlBlock>
+
+              <ControlBlock
+                label="Simulation Speed"
+                value={`${controls.timeScale.toFixed(2)}x`}
+                helper="Slows the solver down for a calmer orbital read or speeds it up for turbulence."
+              >
+                <Slider
+                  min={0.1}
+                  max={1.25}
+                  step={0.05}
+                  value={[controls.timeScale]}
+                  onValueChange={([value]) => setNumericControl("timeScale", value)}
+                />
+              </ControlBlock>
+
+              <ControlBlock
                 label="Sync Velocity"
                 value={controls.syncVelocity.toFixed(3)}
                 helper="Controls how quickly orbital phases advance."
@@ -264,6 +317,20 @@ export function ZetaLab() {
               </ControlBlock>
 
               <ControlBlock
+                label="Viewport Zoom"
+                value={`${controls.zoom.toFixed(2)}x`}
+                helper="Pull back for the universe-scale field or zoom inward to inspect local bonds."
+              >
+                <Slider
+                  min={0.6}
+                  max={1.8}
+                  step={0.05}
+                  value={[controls.zoom]}
+                  onValueChange={([value]) => setNumericControl("zoom", value)}
+                />
+              </ControlBlock>
+
+              <ControlBlock
                 label="Pole Pressure"
                 value={controls.polePressure.toFixed(2)}
                 helper="Strength of the clamped zeta(1) singular lens."
@@ -274,6 +341,20 @@ export function ZetaLab() {
                   step={0.05}
                   value={[controls.polePressure]}
                   onValueChange={([value]) => setNumericControl("polePressure", value)}
+                />
+              </ControlBlock>
+
+              <ControlBlock
+                label="Zeta Stack"
+                value={`1-${controls.zetaDepth}`}
+                helper="Adds higher harmonic zeta terms through zeta(16), not just the singular lens at zeta(1)."
+              >
+                <Slider
+                  min={1}
+                  max={16}
+                  step={1}
+                  value={[controls.zetaDepth]}
+                  onValueChange={([value]) => setNumericControl("zetaDepth", value)}
                 />
               </ControlBlock>
 
@@ -293,9 +374,33 @@ export function ZetaLab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <ToggleButton
-                  active={controls.showLinks}
+                  active={controls.enableMutation}
+                  label="Mutation On"
+                  offLabel="Mutation Off"
+                  onClick={() => setToggleControl("enableMutation")}
+                />
+                <ToggleButton
+                  active={controls.enableBonds}
                   label="Bonds On"
                   offLabel="Bonds Off"
+                  onClick={() => setToggleControl("enableBonds")}
+                />
+                <ToggleButton
+                  active={controls.enableForces}
+                  label="Forces On"
+                  offLabel="Forces Off"
+                  onClick={() => setToggleControl("enableForces")}
+                />
+                <ToggleButton
+                  active={controls.enableSync}
+                  label="Sync On"
+                  offLabel="Sync Off"
+                  onClick={() => setToggleControl("enableSync")}
+                />
+                <ToggleButton
+                  active={controls.showLinks}
+                  label="Bonds On"
+                  offLabel="Links Off"
                   onClick={() => setNumericControl("showLinks", !controls.showLinks)}
                 />
                 <ToggleButton
@@ -310,8 +415,11 @@ export function ZetaLab() {
                 <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
                   Math Note
                 </div>
-                The viewport treats <span className="font-mono text-white">zeta(1)</span> as a pole and
-                clamps its visual force so the system remains stable enough to explore interactively.
+                The viewport treats <span className="font-mono text-white">zeta(1)</span> as the pole term,
+                then layers harmonic signatures through{" "}
+                <span className="font-mono text-white">{`zeta(${controls.zetaDepth})`}</span> to shape the
+                orbital field without collapsing the simulation, while the event toggles let you isolate
+                mutation, bond, force, and sync behavior independently.
               </div>
             </CardContent>
           </Card>
